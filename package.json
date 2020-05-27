@@ -39,6 +39,12 @@
     "tsd": "tsc -p src/compiler --emitDeclarationOnly && tsc -p src/runtime --emitDeclarationOnly",
     "lint": "eslint \"{src,test}/**/*.{ts,js}\""
   },
+  "mocha": {
+    "file": "./test/test.ts",
+    "require": "sucrase/register",
+    "bail": true,
+    "timeout": "10000"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/sveltejs/svelte.git"
@@ -63,8 +69,10 @@
     "@rollup/plugin-sucrase": "^3.0.0",
     "@rollup/plugin-typescript": "^2.0.1",
     "@rollup/plugin-virtual": "^2.0.0",
+    "@types/jsdom": "^16.2.2",
     "@types/mocha": "^5.2.7",
     "@types/node": "^8.10.53",
+    "@types/puppeteer": "^2.1.0",
     "@typescript-eslint/eslint-plugin": "^1.13.0",
     "@typescript-eslint/parser": "^2.1.0",
     "acorn": "^7.1.0",
@@ -88,7 +96,6 @@
     "rollup": "^1.27.14",
     "source-map": "^0.7.3",
     "source-map-support": "^0.5.13",
-    "tiny-glob": "^0.2.6",
     "tslib": "^1.10.0",
     "typescript": "^3.5.3"
   },

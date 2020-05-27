@@ -1,7 +1,5 @@
-import * as assert from "assert";
 import * as fs from "fs";
 import * as path from "path";
-import * as glob from 'tiny-glob/sync.js';
 
 import {
 	showOutput,
@@ -11,8 +9,10 @@ import {
 	tryToLoadJson,
 	cleanRequireCache,
 	shouldUpdateExpected,
-	mkdirp
-} from "../helpers.js";
+	mkdirp,
+} from "../helpers";
+import { glob } from "../tiny-glob";
+import { assert } from "../test";
 
 function tryToReadFile(file) {
 	try {
@@ -23,7 +23,7 @@ function tryToReadFile(file) {
 	}
 }
 
-const sveltePath = process.cwd().split('\\').join('/');
+const sveltePath = process.cwd().split("\\").join("/");
 let compile = null;
 
 describe("ssr", () => {
@@ -41,13 +41,14 @@ describe("ssr", () => {
 		// add .solo to a sample directory name to only run that test, or
 		// .show to always show the output. or both
 		const solo = config.solo || /\.solo/.test(dir);
+		const skip = config.skip || /\.skip/.test(dir);
 		const show = /\.show/.test(dir);
 
 		if (solo && process.env.CI) {
 			throw new Error("Forgot to remove `solo: true` from test");
 		}
 
-		(solo ? it.only : it)(dir, () => {
+		(skip ? it.skip : solo ? it.only : it)(dir, () => {
 			dir = path.resolve(`${__dirname}/samples`, dir);
 
 			cleanRequireCache();
@@ -55,8 +56,8 @@ describe("ssr", () => {
 			const compileOptions = {
 				sveltePath,
 				...config.compileOptions,
-				generate: 'ssr',
-				format: 'cjs'
+				generate: "ssr",
+				format: "cjs",
 			};
 
 			require("../../register")(compileOptions);
@@ -88,8 +89,8 @@ describe("ssr", () => {
 
 				try {
 					assert.equal(
-						css.code.replace(/^\s+/gm, ""),
-						expectedCss.replace(/^\s+/gm, "")
+						css.code.replace(/^\s+/gm, "").replace(/[\r\n]/, ""), 
+						expectedCss.replace(/^\s+/gm, "").replace(/[\r\n]/, "")
 					);
 				} catch (error) {
 					if (shouldUpdateExpected()) {
@@ -118,9 +119,9 @@ describe("ssr", () => {
 					}
 				}
 
-				if (show) showOutput(dir, { generate: 'ssr', format: 'cjs' });
+				if (show) showOutput(dir, { generate: "ssr", format: "cjs" });
 			} catch (err) {
-				showOutput(dir, { generate: 'ssr', format: 'cjs' });
+				showOutput(dir, { generate: "ssr", format: "cjs" });
 				err.stack += `\n\ncmd-click: ${path.relative(process.cwd(), dir)}/main.svelte`;
 				throw err;
 			}
@@ -133,6 +134,7 @@ describe("ssr", () => {
 
 		const config = loadConfig(`./runtime/samples/${dir}/_config.js`);
 		const solo = config.solo || /\.solo/.test(dir);
+		const skip = config.skip || /\.skip/.test(dir);
 
 		if (solo && process.env.CI) {
 			throw new Error("Forgot to remove `solo: true` from test");
@@ -140,7 +142,7 @@ describe("ssr", () => {
 
 		if (config.skip_if_ssr) return;
 
-		(config.skip ? it.skip : solo ? it.only : it)(dir, () => {
+		(skip ? it.skip : solo ? it.only : it)(dir, () => {
 			const cwd = path.resolve("test/runtime/samples", dir);
 
 			cleanRequireCache();
@@ -150,17 +152,17 @@ describe("ssr", () => {
 			const compileOptions = {
 				sveltePath,
 				...config.compileOptions,
-				generate: 'ssr',
-				format: 'cjs'
+				generate: "ssr",
+				format: "cjs"
 			};
 
 			require("../../register")(compileOptions);
 
-			glob('**/*.svelte', { cwd }).forEach(file => {
-				if (file[0] === '_') return;
+			glob("**/*.svelte", { cwd }).forEach((file) => {
+				if (file[0] === "_") return;
 
-				const dir  = `${cwd}/_output/ssr`;
-				const out = `${dir}/${file.replace(/\.svelte$/, '.js')}`;
+				const dir = `${cwd}/_output/ssr`;
+				const out = `${dir}/${file.replace(/\.svelte$/, ".js")}`;
 
 				if (fs.existsSync(out)) {
 					fs.unlinkSync(out);
@@ -206,7 +208,7 @@ describe("ssr", () => {
 				err.stack += `\n\ncmd-click: ${path.relative(process.cwd(), cwd)}/main.svelte`;
 
 				if (config.error) {
-					if (typeof config.error === 'function') {
+					if (typeof config.error === "function") {
 						config.error(assert, err);
 					} else {
 						assert.equal(err.message, config.error);

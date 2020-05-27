@@ -1,8 +1,8 @@
-import * as assert from 'assert';
 import * as fs from 'fs';
-import { svelte, tryToLoadJson, shouldUpdateExpected } from '../helpers.js';
+import { svelte, tryToLoadJson } from '../helpers';
+import { assert } from '../test';
 
-describe('parse', () => {
+describe('parser', () => {
 	fs.readdirSync(`${__dirname}/samples`).forEach(dir => {
 		if (dir[0] === '.') return;
 
@@ -10,9 +10,7 @@ describe('parse', () => {
 		const solo = /\.solo$/.test(dir);
 
 		if (solo && process.env.CI) {
-			throw new Error(
-				`Forgot to remove '.solo' from test parser/samples/${dir}`
-			);
+			throw new Error(`Forgot to remove '.solo' from test parser/samples/${dir}`);
 		}
 
 		const skip = !fs.existsSync(`${__dirname}/samples/${dir}/input.svelte`);
@@ -36,19 +34,8 @@ describe('parse', () => {
 				assert.deepEqual(ast.instance, expectedOutput.instance);
 				assert.deepEqual(ast.module, expectedOutput.module);
 			} catch (err) {
-				if (err.name !== 'ParseError') throw err;
-				if (!expectedError) throw err;
-
-				try {
-					assert.equal(err.code, expectedError.code);
-					assert.equal(err.message, expectedError.message);
-					assert.deepEqual(err.start, expectedError.start);
-					assert.equal(err.pos, expectedError.pos);
-					assert.equal(err.toString().split('\n')[0], `${expectedError.message} (${expectedError.start.line}:${expectedError.start.column})`);
-				} catch (err2) {
-					const e = err2.code === 'MODULE_NOT_FOUND' ? err : err2;
-					throw e;
-				}
+				if (err.name !== 'ParseError' || !expectedError) throw err;
+				assert.deepEqual(JSON.parse(JSON.stringify({ ...err, message: err.message })), expectedError);
 			}
 		});
 	});

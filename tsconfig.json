@@ -2,13 +2,14 @@
 	"include": [],
 
 	"compilerOptions": {
-		"rootDir": "src",
+		"rootDirs": ["src", "test"],
 
 		// target node v8+ (https://node.green/)
 		// the only missing feature is Array.prototype.values
 		"lib": ["es2017"],
 		"target": "es2017",
 
+		"skipLibCheck": true,
 		"declaration": true,
 		"declarationDir": "types",
 
