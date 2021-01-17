@@ -1,6 +1,6 @@
 import { add_render_callback, flush, schedule_update, dirty_components } from './scheduler';
 import { current_component, set_current_component } from './lifecycle';
-import { blank_object, is_empty, is_function, run, run_all, noop } from './utils';
+import { blank_object, is_function, run, run_all, noop } from './utils';
 import { children, detach } from './dom';
 import { transition_in } from './transitions';
 
@@ -203,10 +203,13 @@ if (typeof HTMLElement === 'function') {
 		}
 
 		$set($$props) {
-			if (this.$$set && !is_empty($$props)) {
-				this.$$.skip_bound = true;
-				this.$$set($$props);
-				this.$$.skip_bound = false;
+			if (this.$$set) {
+				for (const key in $$props) {
+					this.$$.skip_bound = true;
+					this.$$set($$props);
+					this.$$.skip_bound = false;
+					return;
+				}
 			}
 		}
 	};
@@ -235,10 +238,13 @@ export class SvelteComponent {
 	}
 
 	$set($$props) {
-		if (this.$$set && !is_empty($$props)) {
-			this.$$.skip_bound = true;
-			this.$$set($$props);
-			this.$$.skip_bound = false;
+		if (this.$$set) {
+			for (const key in $$props) {
+				this.$$.skip_bound = true;
+				this.$$set($$props);
+				this.$$.skip_bound = false;
+				return;
+			}
 		}
 	}
 }
