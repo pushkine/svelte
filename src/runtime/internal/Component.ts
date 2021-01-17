@@ -203,10 +203,13 @@ if (typeof HTMLElement === 'function') {
 		}
 
 		$set($$props) {
-			if (this.$$set && !is_empty($$props)) {
-				this.$$.skip_bound = true;
-				this.$$set($$props);
-				this.$$.skip_bound = false;
+			if (this.$$set) {
+				for (const key in $$props) {
+					this.$$.skip_bound = true;
+					this.$$set($$props);
+					this.$$.skip_bound = false;
+					return;
+				}
 			}
 		}
 	};
@@ -235,10 +238,13 @@ export class SvelteComponent {
 	}
 
 	$set($$props) {
-		if (this.$$set && !is_empty($$props)) {
-			this.$$.skip_bound = true;
-			this.$$set($$props);
-			this.$$.skip_bound = false;
+		if (this.$$set) {
+			for (const key in $$props) {
+				this.$$.skip_bound = true;
+				this.$$set($$props);
+				this.$$.skip_bound = false;
+				return;
+			}
 		}
 	}
 }
